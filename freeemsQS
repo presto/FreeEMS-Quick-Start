@@ -1,0 +1,80 @@
+#!/bin/bash
+#
+echo -----------------------------------------------------------
+echo ---------- FreeEMS - Developers install script ------------
+echo -----------------------------------------------------------
+echo  FreeEMS - the open source engine management system
+echo 
+echo  Copyright 2008-2012 Preston Saunders
+echo  
+echo  This file is part of the FreeEMS project.
+echo  
+echo  Thank you for choosing FreeEMS to run your engine!
+echo -----------------------------------------------------------
+echo
+echo This install script is intened for use on fresh installs of
+echo Debian, it will download, install and configure the 
+echo necessary tools; USE AT YOUR OWN RISK!
+echo
+echo ===========================================================
+echo --- This install requires an active internet connection ---
+echo ===========================================================
+echo
+echo
+
+#TODO add in an abort function, and the have to options for 'FreeEMS users' install and a 'developers' install.
+
+
+# Make FreeEMS home, maven3, maven and user bin directorys.
+sudo mkdir -m 777 ~/Desktop/workspaces ~/Desktop/workspaces/freeems /usr/local/maven3 /usr/local/maven ~/bin
+
+# Update application cache
+sudo apt-get update
+
+# Install git
+sudo apt-get install git
+
+
+#
+# Clone repository's
+#
+cd ~/Desktop/workspaces/freeems/				#Directory for following clones
+git clone git://github.com/fredcooke/freeems-vanilla.git	#clone FreeEMS-vanilla
+git clone git://github.com/gufi/OpenLogViewer.git		#clone Open Log Viewer
+git clone git://github.com/seank/freeems-loader.git		#clone FreeEMS-Loader
+#git clone git://github.com/presto/freeems-log-reports.git	#clone FreeEMS log reporting template
+#git clone git://github.com/presto/freeems-scripts.git		#clone FreeEMS bash scripts
+
+#Mega-Tunix clone and install
+cd ~/Desktop/workspaces/					#directory for repo to be cloned into
+git clone git://github.com/djandruczyk/MegaTunix.git 		#clone mtx repo
+cd ~/Desktop/workspaces/MegaTunix/ 				#change to new mtx directory
+sudo ./autogen.sh						
+make
+sudo make install
+#TODO add/install what is needed to install MTX
+
+#
+#Install additional apps
+#
+sudo apt-get -y install cutecom					#install serial communications application
+sudo apt-get -y install kdiff3					#install file diffing application
+
+
+#
+# Add the following entries to .bashrc
+#
+cp ~/.bashrc ~/.bashrc_backup 					#save a copy of .bashrc before modification to ~/ dir
+echo '
+export PATH=$PATH:~/bin' >> ~/.bashrc				#yes the blankness is meant to be on the above line.
+echo 'export PATH=$PATH:~/Desktop/workspaces/freeems/freeems-vanilla/bin/' >> ~/.bashrc
+echo 'export PATH=$PATH:~/usr/local/maven/bin' >> ~/.bashrc
+
+
+#TODO add 'olv' script to bin for open log viewer universal run
+#TODO add 'FreeEMS-Loader' script to bin for universal run
+#TODO copy scripts to ~/bin dir
+#TODO remove temp scripts clone dir (freeems-scripts) 
+
+
+echo 'FreeEMSers are GO!';

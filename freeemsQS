@@ -1,7 +1,5 @@
 #!/bin/bash
 
-clear;
-
 echo '-----------------------------------------------------------'
 echo '---------- FreeEMS - Developers install script ------------'
 echo '-----------------------------------------------------------'
@@ -15,8 +13,8 @@ echo ' Thank you for choosing FreeEMS to run your engine! '
 echo '-----------------------------------------------------------'
 echo
 echo 'This install script is intended for use on fresh installs of'
-echo 'Debian, it will download, install and configure the 		  '
-echo 'necessary tools; USE AT YOUR OWN RISK!							  '
+echo 'Debian, it will download, install and configure the 		   '
+echo 'necessary tools; USE AT YOUR OWN RISK!							   '
 echo
 echo '==========================================================='
 echo '--- This install requires an active internet connection ---'
@@ -31,39 +29,61 @@ sleep 3
 echo 'Do you want to continue [Y/n]?'; read scriptRun
 if [ "$scriptRun" == "Y" -o "$scriptRun" == "y" -o "$scriptRun" == "" ]; then
 
-# Make FreeEMS, home and user bin directorys.
-mkdir ~/Desktop/workspaces 
-mkdir ~/Desktop/workspaces/freeems
-mkdir ~/bin 
+echo 'Please type your login user name, and press enter' ; read user
+
+# Make FreeEMS directorys.
+mkdir ~/workspaces/freeems
+
+# create symlink on desktop if desktop exsits
+if [ -d "$Desktop" ]; then
+   cd ~/Desktop
+	ln -s ~/workspaces/ workspaces
+fi
+
+#Add Dialout to standard user groups and refresh database
+sudo adduser $user dialout
+updatedb
 
 # Update application cache
 sudo apt-get update
 
 # Install git
-sudo apt-get install git
+sudo apt-get install git-core
 
 # Clone repository's
-cd ~/Desktop/workspaces/freeems/				
+cd ~/workspaces/freeems/				
 git clone git://github.com/FreeEMS/freeems-vanilla.git	
 git clone git://github.com/FreeEMS/OpenLogViewer.git				
-git clone git://github.com/FreeEMS/freeems-loader.git			
-#git clone git://github.com/presto/freeems-log-reports.git	
-#git clone git://github.com/presto/freeems-scripts.git		
-#git pull git://github.com/FreeEMS/FreeEMS-Quick-Start.git
+git clone git://github.com/FreeEMS/freeems-loader.git
 
+#check for quick start dir and create if it does not exist
+if [ -d "$FreeEMS-Quick-Start" ]; then
+	git pull git://github.com/FreeEMS/FreeEMS-Quick-Start.git			
+else
+	git clone git://github.com/FreeEMS/FreeEMS-Quick-Start.git
+fi
+
+mkdir ~/bin
+#add scripts to bin dir
+#TODO
+ 
 #maven install make dirs maven and maven3 
 mkdir /usr/local/maven 
-mkdir /usr/local/maven3 
 #TODO maven and OLV install
 
 #Mega-Tunix clone and install
 git clone git://github.com/FreeEMS/MegaTunix.git	 		
-cd ~/Desktop/workspaces/freeems/MegaTunix/ 						
+cd ~/workspaces/freeems/MegaTunix/ 						
 sudo apt-get install autoconf libtool intltool flex bison libpango1.0-dev libglade2-dev libgtkglext1-dev g++
 sudo ./autogen.sh						
 make
 sudo make install
 sudo ldconfig
+
+echo '
+export PATH=$PATH:~/bin' >> ~/.bashrc				#yes the blankness is meant to be on the above line.
+echo 'export PATH=$PATH:~/Desktop/workspaces/freeems/freeems-vanilla/bin/' >> ~/.bashrc
+echo 'export PATH=$PATH:~/usr/local/maven/bin' >> ~/.bashrc
 
 #Install additional apps
 echo 'Would you like to install Cutecom [Y/n]?'; read cutecomInstall
@@ -80,27 +100,14 @@ else
 echo "Kdiff3 install skipped"
 fi
 
-# Add the following entries to .bashrc
-cp ~/.bashrc ~/.bashrc.backup 					#save a copy of .bashrc before modification to ~/ dir
-echo '
-export PATH=$PATH:~/bin' >> ~/.bashrc				#yes the blankness is meant to be on the above line.
-echo 'export PATH=$PATH:~/Desktop/workspaces/freeems/freeems-vanilla/bin/' >> ~/.bashrc
-echo 'export PATH=$PATH:~/usr/local/maven/bin' >> ~/.bashrc
-
-#TODO add 'olv' script to bin for open log viewer universal run
-#TODO add 'FreeEMS-Loader' script to bin for universal run
-#TODO copy scripts to ~/bin dir
-#TODO create a log file
-
 echo
 echo '** Install Complete **'
 echo 
-echo 'TODO add How to use what has been installed'
+echo 'TODO add how to use what has been installed'
 exit 0;
 
 else
 echo
 echo 'script ABORTED'
-echo
 exit 0;
 fi
